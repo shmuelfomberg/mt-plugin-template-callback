@@ -1,0 +1,53 @@
+Movable Type Plugin: Template Callbacks
+---------------------------------------
+
+This is a proof-of-concept plugin. It defines the concept of 'Callbacks' inside a template.
+
+TAGS
+----
+
+If offers three tags:
+
+<$mt:TemplateCallback name="callback name" [priority="5"] $>
+
+This runs all the callbacks for the given name
+
+<mt:SetTemplateCallback name="callback name" [priority="5"] $>
+   ... template code ...
+</mt:SetTemplateCallback>
+
+This set a callback for a given name, and priority. 
+if no priority was given, 5 is the default
+
+<mt:AreCallbacksRegistred name="callback name">
+</mt:AreCallbacksRegistred>
+
+A conditional block, running only if any callback was registered for this name
+
+Callback Names
+--------------
+
+A typical callback name is: "publish.verytop.index"
+If goes from the general, to the position, and to the specific page name.
+In this case, callbacks registered to the following names will be run:
+"publish", "publish.verytop" and "publish.verytop.index"
+
+So callback registred to "publish.verytop" will appear in the very top 
+of all the pages.
+
+Registering a Callback
+----------------------
+
+For every active plugin, a file named "tmpl_cb.yaml" will be loaded.
+There should be content similar to the following:
+
+callbacks:
+    - 
+      name: publish.verytop.index
+      template: <h1>this should be in the top, well almost</h1>
+    - 
+      name: publish.verytop
+      template: <h1>this should be in the top</h1>
+      priority: 2
+
+

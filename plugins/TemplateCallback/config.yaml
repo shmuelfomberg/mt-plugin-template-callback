@@ -1,0 +1,15 @@
+name: TemplateCallback
+id: TemplateCallback
+key: TemplateCallback
+author_link: http://www.movabletype.org/
+author_name: Six Apart
+description: Proof-of-concept for template callback tag
+version: 1.0
+plugin_link: http://www.movabletype.org/
+
+tags:
+    function:
+        TemplateCallback: $TemplateCallback::TemplateCallback::Tags::template_callback
+    block:
+        SetTemplateCallback: $TemplateCallback::TemplateCallback::Tags::set_template_callback
+        AreCallbacksRegistred?: $TemplateCallback::TemplateCallback::Tags::are_callbacks_registred
