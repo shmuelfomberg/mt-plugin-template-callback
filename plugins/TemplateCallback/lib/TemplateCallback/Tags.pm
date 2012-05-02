@@ -141,4 +141,94 @@ sub are_callbacks_registred {
     return scalar(@$all_callbacks);    
 }
 
+sub _hdlr_widget_manager {
+    my ( $ctx, $args, $cond ) = @_;
+    my $tmpl_name = delete $args->{name}
+        or return $ctx->error( MT->translate("name is required.") );
+    my $blog_id = $args->{blog_id} || $ctx->{__stash}{blog_id} || 0;
+    my $tmpl = MT->model('template')->load(
+        {   name    => $tmpl_name,
+            blog_id => $blog_id ? [ 0, $blog_id ] : 0,
+            type    => 'widgetset'
+        },
+        {   sort      => 'blog_id',
+            direction => 'descend'
+        }
+        )
+        or return $ctx->error(
+        MT->translate( "Specified WidgetSet '[_1]' not found.", $tmpl_name )
+        );
+
+    ## Load all widgets for make cache.
+    my @widgets;
+    if ( my $modulesets = $tmpl->modulesets ) {
+        my @widget_ids = split ',', $modulesets;
+        my $terms
+            = ( scalar @widget_ids ) > 1
+            ? { id => \@widget_ids }
+            : $widget_ids[0];
+        my @objs = MT->model('template')->load($terms);
+        my %widgets = map { $_->id => $_ } @objs;
+        push @widgets, $widgets{$_} for @widget_ids;
+    }
+    elsif ( my $text = $tmpl->text ) {
+        my @widget_names = $text =~ /widget\=\"([^"]+)\"/g;
+        my @objs = MT->model('template')->load(
+            {   name    => \@widget_names,
+                blog_id => [ $blog_id, 0 ],
+            }
+        );
+        @objs = sort { $a->blog_id <=> $b->blog_id } @objs;
+        my %widgets;
+        $widgets{ $_->name } = $_ for @objs;
+        push @widgets, $widgets{$_} for @widget_names;
+    }
+    return '' unless scalar @widgets;
+
+    if (not $callbacks_listing) {
+        # callback were not initialized until now? probably old-style template
+        my @res;
+        {
+            local $ctx->{__stash}{tag} = 'include';
+            for my $widget (@widgets) {
+                my $name     = $widget->name;
+                my $stash_id = Encode::encode_utf8(
+                    join( '::', 'template_widget', $blog_id, $name ) );
+                my $req = MT::Request->instance;
+                my $tokens = $ctx->stash('builder')->compile( $ctx, $widget );
+                $req->stash( $stash_id, [ $widget, $tokens ] );
+                my $out = $ctx->invoke_handler( 'include',
+                    { %$args, widget => $name, }, $cond, );
+
+                # if error is occured, pass the include's errstr
+                return unless defined $out;
+
+                push @res, $out;
+            }
+        }
+        return join( '', @res );
+    }
+    else {
+        my $step = 4.0 / scalar(@widgets);
+        my $priority = 3;
+        my $app = MT->instance;
+        my $reg = init_callbacks($app);
+        my $name = 
+              $tmpl_name eq $app->translate("3-column layout - Primary Sidebar") ? "sidebar_primary"
+            : $tmpl_name eq $app->translate("3-column layout - Secondary Sidebar") ? "sidebar_secondary"
+            : "sidebar_primary";
+        my $name_prefix  = $ctx->var('callback_prefix');
+        $name = "$name_prefix.$name" if $name_prefix;
+        my $cb_array = ( $reg->{$name} ||= [] );
+        for my $widget (@widgets) {
+            my $tokens = $ctx->stash('builder')->compile( $ctx, $widget );
+            my $cb = { tokens => $tokens, priority => $priority };
+            $priority += $step;
+            push @$cb_array, $cb;
+        }
+        return '';
+    }
+}
+
+
 1;

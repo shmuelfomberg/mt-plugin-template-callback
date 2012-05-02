@@ -10,6 +10,7 @@ plugin_link: http://www.movabletype.org/
 tags:
     function:
         TemplateCallback: $TemplateCallback::TemplateCallback::Tags::template_callback
+        WidgetSet: $TemplateCallback::TemplateCallback::Tags::_hdlr_widget_manager
     block:
         SetTemplateCallback: $TemplateCallback::TemplateCallback::Tags::set_template_callback
         AreCallbacksRegistred?: $TemplateCallback::TemplateCallback::Tags::are_callbacks_registred
