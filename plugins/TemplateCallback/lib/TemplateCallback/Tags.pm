@@ -26,11 +26,15 @@ sub init_callbacks {
 }
 
 sub get_cb_by_name {
-    my ($reg, $name_arg) = @_;
+    my ($ctx, $reg, $name_arg) = @_;
     return $callbacks_cache->{$name_arg} if exists $callbacks_cache->{$name_arg};
+    my $name_prefix  = $ctx->var('callback_prefix');
+    my $name_postfix = $ctx->var('callback_postfix');
     my @names = grep $_, split /[\s,]+/, $name_arg;
     my @all_names;
     foreach my $name (@names) {
+        $name = "$name_prefix.$name" if $name_prefix;
+        $name .= ".$name_postfix" if $name_postfix;
         my ($ass, @parts) = split /\./, $name;
         push @all_names, $ass;
         foreach my $part (@parts) {
@@ -71,7 +75,7 @@ sub template_callback {
     my $reg = init_callbacks($app);
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
-    my $all_callbacks = get_cb_by_name($reg, $name_arg);
+    my $all_callbacks = get_cb_by_name($ctx, $reg, $name_arg);
     my $priority = $args->{priority} || "1..10";
     $all_callbacks = get_cb_by_priority($all_callbacks, $priority);
     my $output = '';
@@ -133,7 +137,7 @@ sub are_callbacks_registred {
     my $reg = init_callbacks($app);
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
-    my $all_callbacks = get_cb_by_name($reg, $name_arg);
+    my $all_callbacks = get_cb_by_name($ctx, $reg, $name_arg);
     return scalar(@$all_callbacks);    
 }
 

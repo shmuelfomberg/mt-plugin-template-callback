@@ -1,3 +1,5 @@
+<$mt:var name="callback_prefix" value="publish"$>
+<$mt:var name="callback_postfix" value="main_index"$>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" id="sixapart-standard">
@@ -10,9 +12,8 @@
     <div id="container">
         <div id="container-inner">
 
-
             <$mt:Include module="<__trans phrase="Banner Header">"$>
-
+            
 
             <div id="content">
                 <div id="content-inner">
@@ -20,15 +21,18 @@
 
                     <div id="alpha">
                         <div id="alpha-inner">
+                            <$mt:TemplateCallback name="before_content"$>
 <mt:Entries>
                             <mt:Ignore><!-- Use the Entry Summary module for each entry published on this page --></mt:Ignore>
                             <$mt:Include module="<__trans phrase="Entry Summary">"$>
+                            <$mt:TemplateCallback name="between_content.entry_summary"$>
 </mt:Entries>
 
 
                             <div class="content-nav">
                                 <a href="<$mt:Link template="archive_index"$>"><__trans phrase="Archives"></a>
                             </div>
+                            <$mt:TemplateCallback name="after_content"$>
 
 
                         </div>

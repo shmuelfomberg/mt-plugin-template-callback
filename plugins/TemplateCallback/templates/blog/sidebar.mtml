@@ -9,13 +9,14 @@
 
 <div id="beta">
     <div id="beta-inner">
-
 <mt:If name="page_columns" eq="2">
     <mt:Ignore><!-- Use the 2-column layout Sidebar if page layout is layout-wt or layout-tw. --></mt:Ignore>
     <$mt:WidgetSet name="<__trans phrase="2-column layout - Sidebar">"$>
+    <$mt:TemplateCallback name="sidebar_primary sidebar_secondary"$>
 <mt:Else name="page_columns" eq="3">
     <mt:Ignore><!-- Use the 3-column layout Primary Sidebar if page layout is layout-wtt or layout-twt. --></mt:Ignore>
     <$mt:WidgetSet name="<__trans phrase="3-column layout - Primary Sidebar">"$>
+    <$mt:TemplateCallback name="sidebar_primary"$>
 </mt:If>
 
     </div>
@@ -27,6 +28,7 @@
 <div id="gamma">
     <div id="gamma-inner">
     <$mt:WidgetSet name="<__trans phrase="3-column layout - Secondary Sidebar">"$>
+    <$mt:TemplateCallback name="sidebar_secondary"$>
     </div>
 </div>
 </mt:If>
