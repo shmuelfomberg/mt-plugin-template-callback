@@ -28,7 +28,7 @@ Callback Names
 --------------
 
 A typical callback name is: "publish.verytop.index"
-If goes from the general, to the position, and to the specific page name.
+If goes from the application, to the position, and to the specific page name.
 In this case, callbacks registered to the following names will be run:
 "publish", "publish.verytop" and "publish.verytop.index"
 
@@ -50,15 +50,18 @@ callbacks:
       template: <h1>this should be in the top</h1>
       priority: 2
 
-Q&A
----
+Widgets
+-------
 
-Why is the template-callbacks are in seperate file the the plugin's config.yaml?
+The widgets are automatically loaded into these callbacks: 
+"publish.sidebar_primary" and "publish.sidebar_secondary", 
+with priorities from 3 to 7. If there is only one sidebar, 
+they will be mixed together, ordered by priority.
 
-I thought that maybe plugins will want to write out tmpl_cb.yaml in response to
-configuration changes
 
 TODO
 ----
 
 Add Dynamic Publishing support
+Move the callbacks from "tmpl_cb.yaml" files to the database or the regualr config.yaml, or both.
+Add a blog-level callback?
