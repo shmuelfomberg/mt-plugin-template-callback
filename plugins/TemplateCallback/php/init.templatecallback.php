@@ -13,7 +13,7 @@ function __init_collectcallbacks() {
 
     foreach ($plugin_paths as $path) {
         if ( !is_dir($path) )
-            $path = $this->config('MTDir') . DIRECTORY_SEPARATOR . $path;
+            $path = $mt->config('MTDir') . DIRECTORY_SEPARATOR . $path;
 
         if ($dh = @opendir($path)) {
 			while (($file = readdir($dh)) !== false) {
@@ -29,8 +29,6 @@ function __init_collectcallbacks() {
 }
 
 function __init_mtsettemplatecallback() {
-    $STDERR = fopen('php://stderr', 'w+');
-    fwrite($STDERR, "in init\n");
     $mt = MT::get_instance();
     $ctx =& $mt->context();
 	$ctx->add_token_tag('mtsettemplatecallback');

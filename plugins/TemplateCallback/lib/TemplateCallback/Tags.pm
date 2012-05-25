@@ -5,10 +5,12 @@ use warnings;
 my $callbacks_listing;
 my $callbacks_cache = {};
 
-sub init_callbacks {
-    my $app = shift;
-    return $callbacks_listing if $callbacks_listing;
-    $callbacks_listing = {};
+# DB storage:
+# type => 't_callback', name => 'verytop.entry',(or 'plugin_id::verytop.entry')
+# text => '<callback text>', build_interval => <priotiry>
+# identifier => 'publish'
+
+sub init_callbacks_from_yaml {
     while (my ($plugin_sig, $rec) = each %MT::Plugins) {
         my $plugin = $rec->{object};
         my $id = $plugin->id;
@@ -22,14 +24,49 @@ sub init_callbacks {
             push @$array, $cb_rec;
         }
     }
+}
+
+sub init_callbacks {
+    my ($app, $ctx) = @_;
+    return $callbacks_listing if $callbacks_listing;
+    $callbacks_listing = {};
+    my $blog = $ctx->stash('blog');
+    my $blog_id = 
+        !$blog ? undef :
+        ref $blog ? $blog->id :
+        $blog;
+
+    # load from database
+    my $iter = $app->model('template')->load_iter({
+        type => 't_callback',
+        identifier => 'publish',
+        blog_id => ($blog_id ? [0, $blog_id] : 0),
+    });
+    while (my $tmpl = $iter->()) {
+        my $cb_rec = {};
+        my $name = $tmpl->name();
+        if ($name =~ s/^(\w+::)//) {
+            my $plugin = $1;
+            # skip callbacks from non-loaded plugins
+            next unless $app->component($plugin);
+            $cb_rec->{plugin} = $plugin;
+        }
+        $cb_rec->{priority} = $tmpl->build_interval();
+        $cb_rec->{template} = $tmpl->text();
+        $cb_rec->{name} = 'publish.' . $name;
+        my $array = ( $callbacks_listing->{$cb_rec->{name}} ||= [] );
+        push @$array, $cb_rec;
+    }
+
     return $callbacks_listing;
 }
 
 sub get_cb_by_name {
     my ($ctx, $reg, $name_arg) = @_;
-    return $callbacks_cache->{$name_arg} if exists $callbacks_cache->{$name_arg};
-    my $name_prefix  = $ctx->var('callback_prefix');
-    my $name_postfix = $ctx->var('callback_postfix');
+    my $name_prefix  = $ctx->var('callback_prefix') || '';
+    my $name_postfix = $ctx->var('callback_postfix') || '';
+    my $cache_name = "$name_prefix#$name_arg#$name_postfix";
+    return $callbacks_cache->{$cache_name} if exists $callbacks_cache->{$cache_name};
     my @names = grep $_, split /[\s,]+/, $name_arg;
     my @all_names;
     foreach my $name (@names) {
@@ -47,7 +84,7 @@ sub get_cb_by_name {
         push @all_callbacks, @{ $reg->{$name} } if exists $reg->{$name};
     }
     @all_callbacks = sort { $a->{priority} <=> $b->{priority} } @all_callbacks;
-    $callbacks_cache->{$name_arg} = \@all_callbacks;
+    $callbacks_cache->{$cache_name} = \@all_callbacks;
     return \@all_callbacks;
 }
 
@@ -72,9 +109,10 @@ sub get_cb_by_priority {
 sub template_callback {
     my ($ctx, $args) = @_;
     my $app = MT->instance;
-    my $reg = init_callbacks($app);
+    my $reg = init_callbacks($app, $ctx);
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
+    #print STDERR "Callback called for $name_arg\n";
     my $all_callbacks = get_cb_by_name($ctx, $reg, $name_arg);
     my $priority = $args->{priority} || "1..10";
     $all_callbacks = get_cb_by_priority($all_callbacks, $priority);
@@ -82,6 +120,7 @@ sub template_callback {
     my $i       = 1;
     my $vars    = $ctx->{__stash}{vars} ||= {};
     foreach my $cb (@$all_callbacks) {
+        #print STDERR "Using a callback\n";
         local $vars->{__first__}   = $i == 1;
         local $vars->{__last__}    = $i == scalar @$all_callbacks;
         local $vars->{__odd__}     = ( $i % 2 ) == 1;
@@ -114,10 +153,16 @@ sub template_callback {
 sub set_template_callback {
     my ($ctx, $args, $cond) = @_;
     my $app = MT->instance;
-    my $reg = init_callbacks($app);
+    my $reg = init_callbacks($app, $ctx);
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
     my $priority = $args->{priority} || 5;
+
+    my $name_prefix  = $ctx->var('callback_prefix') || '';
+    my $name_postfix = $ctx->var('callback_postfix') || '';
+    $name_arg = "$name_prefix.$name_arg" if $name_prefix;
+    $name_arg .= ".$name_postfix" if $name_postfix;
+
     my $val = $ctx->stash('tokens');
     return unless defined($val);
     $val = bless $val, 'MT::Template::Tokens';
@@ -134,7 +179,7 @@ sub set_template_callback {
 sub are_callbacks_registred {
     my ($ctx, $args, $cond) = @_;
     my $app = MT->instance;
-    my $reg = init_callbacks($app);
+    my $reg = init_callbacks($app, $ctx);
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
     my $all_callbacks = get_cb_by_name($ctx, $reg, $name_arg);
@@ -189,7 +234,7 @@ sub _hdlr_widget_manager {
     if (@widgets) {
         my $step = 4.0 / scalar(@widgets);
         my $priority = 3;
-        my $reg = init_callbacks($app);
+        my $reg = init_callbacks($app, $ctx);
         my $name = 
               $tmpl_name eq $app->translate("3-column layout - Primary Sidebar") ? "sidebar_primary"
             : $tmpl_name eq $app->translate("3-column layout - Secondary Sidebar") ? "sidebar_secondary"

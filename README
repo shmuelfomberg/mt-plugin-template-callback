@@ -11,6 +11,7 @@ If offers three tags:
 <$mt:TemplateCallback name="callback name" [priority="5"] $>
 
 This runs all the callbacks for the given name
+Examples for names: "verytop", "siderbar_primary sidebar_secondary"
 
 <mt:SetTemplateCallback name="callback name" [priority="5"] $>
    ... template code ...
@@ -23,6 +24,13 @@ if no priority was given, 5 is the default
 </mt:AreCallbacksRegistred>
 
 A conditional block, running only if any callback was registered for this name
+
+At the start of the template, please add these lines:
+
+<$mt:var name="callback_prefix" value="publish"$>
+<$mt:var name="callback_postfix" value="entry"$>
+
+This specifies the callbacks application and in which page we are now
 
 Callback Names
 --------------
@@ -38,17 +46,29 @@ of all the pages.
 Registering a Callback
 ----------------------
 
-For every active plugin, a file named "tmpl_cb.yaml" will be loaded.
-There should be content similar to the following:
+Create and save a template object, with the following parameters:
+
+  my $tmpl = $app->model('template')->new();
+  $tmpl->type('t_callback');
+  $tmpl->name('verytop.entry');
+  $tmpl->blog_id(0);
+  $tmpl->text('<h1>this is a callback</h1>');
+  $tmpl->build_interval(5);
+  $tmpl->identifier('publish');
+  $tmpl->save() or die "failed to save tmpl";
+
+Notes: 
+* name can also be "plugin_id::verytop.entry", which will be activated only if the plugin is installed
+* blog_id can be 0 or a specific blog number.
+* the identifier specify for which application this callback is directed. currently, only 'publish' exists.
+
+If this callback is setting-depended, you can do it on setting-saving, in the following callbacks:
 
 callbacks:
-    - 
-      name: publish.verytop.index
-      template: <h1>this should be in the top, well almost</h1>
-    - 
-      name: publish.verytop
-      template: <h1>this should be in the top</h1>
-      priority: 2
+    MT::PluginData::pre_save: $Plugin::Module::plugin_data_pre_save
+    save_config_filter.Plugin_Id: $Plugin::Module::register_callbacks
+
+Where the first callback will work for older MT installations, and the second is prefered for new MT versions.
 
 Widgets
 -------
@@ -58,10 +78,14 @@ The widgets are automatically loaded into these callbacks:
 with priorities from 3 to 7. If there is only one sidebar, 
 they will be mixed together, ordered by priority.
 
+Themes
+------
+
+In the attached themes, the following callbacks are used:
+before_content, after_content, above_footer, footer, verybuttom, 
+verytop, banner, below_banner, htmlhead, between_content.entry_summary
 
 TODO
 ----
 
 Add Dynamic Publishing support
-Move the callbacks from "tmpl_cb.yaml" files to the database or the regualr config.yaml, or both.
-Add a blog-level callback?
