@@ -26,17 +26,37 @@ sub init_callbacks_from_yaml {
     }
 }
 
-sub init_callbacks {
+sub init_callbacks_from_files {
+    while (my ($plugin_sig, $rec) = each %MT::Plugins) {
+        my $plugin = $rec->{object};
+        my $id = $plugin->id;
+        my $tc_path = File::Spec->catfile( $plugin->path, 'tmpl', 'callbacks' );
+        next unless -d $tc_path;
+        next unless opendir(my $dh, $tc_path);
+        while (my $file = readdir $dh) {
+            my ($name, $priority) = $file =~ m/^(.*)\.(\d+)\.tmpl$/;
+            next unless $name;
+            my $cb_rec = {
+                plugin => $plugin,
+                name => $name,
+                priority => $priority,
+                file => File::Spec->catfile($tc_path, $file),
+            };
+            my $array = ( $callbacks_listing->{$cb_rec->{name}} ||= [] );
+            push @$array, $cb_rec;
+        }
+    }
+}
+
+sub init_callbacks_from_db {
     my ($app, $ctx) = @_;
-    return $callbacks_listing if $callbacks_listing;
-    $callbacks_listing = {};
+
     my $blog = $ctx->stash('blog');
     my $blog_id = 
         !$blog ? undef :
         ref $blog ? $blog->id :
         $blog;
 
-    # load from database
     my $iter = $app->model('template')->load_iter({
         type => 't_callback',
         identifier => 'publish',
@@ -57,6 +77,15 @@ sub init_callbacks {
         my $array = ( $callbacks_listing->{$cb_rec->{name}} ||= [] );
         push @$array, $cb_rec;
     }
+}
+
+sub init_callbacks {
+    my ($app, $ctx) = @_;
+    return $callbacks_listing if $callbacks_listing;
+    $callbacks_listing = {};
+
+    init_callbacks_from_files();
+    init_callbacks_from_db($app, $ctx);
 
     return $callbacks_listing;
 }

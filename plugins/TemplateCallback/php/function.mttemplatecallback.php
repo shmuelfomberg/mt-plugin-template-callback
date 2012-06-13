@@ -2,8 +2,6 @@
 require_once('callback_lib.php');
 
 function smarty_function_mttemplatecallback($args, &$ctx) {
-    $STDERR = fopen('php://stderr', 'w+');
-    fwrite($STDERR, "in tc\n");
     global $_callback_registry;
     $name = $args['name'];
     if (!$name) return '';
@@ -27,7 +25,6 @@ function smarty_function_mttemplatecallback($args, &$ctx) {
 
     $priority = $args['priority'];
     if (isset($priority)) {
-        fwrite($STDERR, "tc: step 2.1\n");
         $p_begin = 1;
         $p_end = 10;
         if (preg_match('/^(\d+)\.\.(\d+)$/', $priority, $matches)) {
@@ -45,11 +42,15 @@ function smarty_function_mttemplatecallback($args, &$ctx) {
         }
         $cb_array = $p_array;
     }
-    fwrite($STDERR, "tc: step 3\n");
 
     $out = '';
     foreach ($cb_array as $rec) {
-        fwrite($STDERR, "tc: step 3.1\n");
+        if (array_key_exists('file', $rec)) {
+            $filename = $rec['file'];
+            $contents = @file($file);
+            $rec['template'] = implode('', $contents);
+            unset($rec['file']);
+        }
         if (array_key_exists('tokens', $rec)) {
             $func = $rec['tokens'];
             if (!is_array($func)
@@ -62,8 +63,17 @@ function smarty_function_mttemplatecallback($args, &$ctx) {
                 ob_end_clean();
             }
         }
+        elseif (array_key_exists('template', $rec)) {
+            if (!$ctx->_compile_source('evaluated template', $rec['template'], $_var_compiled)) {
+                return $ctx->error("Error compiling template module for callback '$name'");
+            }
+            ob_start();
+            $ctx->_eval('?>' . $_var_compiled);
+            $out .= ob_get_contents();
+            ob_end_clean();
+        }
+
     }
-    fwrite($STDERR, "tc: step 4\n");
 
     return $out;
 
