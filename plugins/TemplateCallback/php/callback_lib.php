@@ -35,6 +35,7 @@ function __init_collectcallbacks_from_files($mt, $ctx) {
 
     $plugin_paths = $mt->config('PluginPath');
     global $_callback_registry;
+       $STDERR = fopen('php://stderr', 'w+');
 
     foreach ($plugin_paths as $path) {
         if ( !is_dir($path) )
@@ -66,13 +67,11 @@ function __init_collectcallbacks_from_files($mt, $ctx) {
                     'name'     => $cb_name,
                 );
                 if (array_key_exists($cb_name, $_callback_registry)) {
-                    $ar = $_callback_registry[$cb_name];
+                    $_callback_registry[$cb_name][] = $rec;
                 }
                 else {
-                    $ar = array();
-                    $_callback_registry[$cb_name] = $ar;
+                    $_callback_registry[$cb_name] = array($rec);
                 }
-                $ar[] = $rec;
             }
         }
         closedir($dh);

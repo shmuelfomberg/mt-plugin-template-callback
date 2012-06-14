@@ -6,14 +6,11 @@ function smarty_function_mttemplatecallback($args, &$ctx) {
     $name = $args['name'];
     if (!$name) return '';
     $pieces = array_reverse(explode('.', $name));
-    $name_part = '';
+    $name_part = 'publish';
     $cb_array = array();
     while (count($pieces) > 0) {
-        if ($name_part !== '') {
-            $name_part .= '.';
-        } 
-        $name_part .= array_pop($pieces);
-        if (isset($_callback_registry[$name_part])) {
+        $name_part .= '.' . array_pop($pieces);
+        if (array_key_exists($name_part, $_callback_registry)) {
             array_splice($cb_array, count($cb_array), 0, $_callback_registry[$name_part]);
         }
     }
@@ -47,7 +44,7 @@ function smarty_function_mttemplatecallback($args, &$ctx) {
     foreach ($cb_array as $rec) {
         if (array_key_exists('file', $rec)) {
             $filename = $rec['file'];
-            $contents = @file($file);
+            $contents = @file($filename);
             $rec['template'] = implode('', $contents);
             unset($rec['file']);
         }
