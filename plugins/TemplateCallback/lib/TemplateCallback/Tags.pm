@@ -2,15 +2,13 @@ package TemplateCallback::Tags;
 use strict;
 use warnings;
 
-my $callbacks_listing;
-my $callbacks_cache = {};
-
 # DB storage:
 # type => 't_callback', name => 'verytop.entry',(or 'plugin_id::verytop.entry')
 # text => '<callback text>', build_interval => <priotiry>
 # identifier => 'publish'
 
 sub init_callbacks_from_yaml {
+    my ($app, $ctx, $callbacks_listing) = @_;
     while (my ($plugin_sig, $rec) = each %MT::Plugins) {
         my $plugin = $rec->{object};
         my $id = $plugin->id;
@@ -27,6 +25,7 @@ sub init_callbacks_from_yaml {
 }
 
 sub init_callbacks_from_files {
+    my ($app, $ctx, $callbacks_listing) = @_;
     while (my ($plugin_sig, $rec) = each %MT::Plugins) {
         my $plugin = $rec->{object};
         my $id = $plugin->id;
@@ -49,7 +48,7 @@ sub init_callbacks_from_files {
 }
 
 sub init_callbacks_from_db {
-    my ($app, $ctx) = @_;
+    my ($app, $ctx, $callbacks_listing) = @_;
 
     my $blog = $ctx->stash('blog');
     my $blog_id = 
@@ -81,12 +80,14 @@ sub init_callbacks_from_db {
 
 sub init_callbacks {
     my ($app, $ctx) = @_;
+    my $callbacks_listing = $ctx->stash('callbacks_listing');
     return $callbacks_listing if $callbacks_listing;
     $callbacks_listing = {};
 
-    init_callbacks_from_files();
-    init_callbacks_from_db($app, $ctx);
+    init_callbacks_from_files($app, $ctx, $callbacks_listing);
+    init_callbacks_from_db($app, $ctx, $callbacks_listing);
 
+    $ctx->stash('callbacks_listing', $callbacks_listing);
     return $callbacks_listing;
 }
 
@@ -95,6 +96,10 @@ sub get_cb_by_name {
     my $name_prefix  = $ctx->var('callback_prefix') || '';
     my $name_postfix = $ctx->var('callback_postfix') || '';
     my $cache_name = "$name_prefix#$name_arg#$name_postfix";
+    my $callbacks_cache = $ctx->stash('callbacks_cache');
+    if (not $callbacks_cache) {
+        $ctx->stash('callbacks_cache', ( $callbacks_cache = {} ) );
+    }
     return $callbacks_cache->{$cache_name} if exists $callbacks_cache->{$cache_name};
     my @names = grep $_, split /[\s,]+/, $name_arg;
     my @all_names;
@@ -195,7 +200,7 @@ sub set_template_callback {
     my $val = $ctx->stash('tokens');
     return unless defined($val);
     $val = bless $val, 'MT::Template::Tokens';
-    my $array = ( $callbacks_listing->{$name_arg} ||= [] );
+    my $array = ( $reg->{$name_arg} ||= [] );
     my $cb_rec = {
         plugin => undef,
         priority => $priority,
