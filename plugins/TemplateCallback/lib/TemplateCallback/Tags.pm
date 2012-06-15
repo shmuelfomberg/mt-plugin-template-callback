@@ -146,7 +146,6 @@ sub template_callback {
     my $reg = init_callbacks($app, $ctx);
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
-    #print STDERR "Callback called for $name_arg\n";
     my $all_callbacks = get_cb_by_name($ctx, $reg, $name_arg);
     my $priority = $args->{priority} || "1..10";
     $all_callbacks = get_cb_by_priority($all_callbacks, $priority);
@@ -154,7 +153,6 @@ sub template_callback {
     my $i       = 1;
     my $vars    = $ctx->{__stash}{vars} ||= {};
     foreach my $cb (@$all_callbacks) {
-        #print STDERR "Using a callback\n";
         local $vars->{__first__}   = $i == 1;
         local $vars->{__last__}    = $i == scalar @$all_callbacks;
         local $vars->{__odd__}     = ( $i % 2 ) == 1;
@@ -225,6 +223,9 @@ sub _hdlr_widget_manager {
     my $tmpl_name = delete $args->{name}
         or return $ctx->error( MT->translate("name is required.") );
     my $blog_id = $args->{blog_id} || $ctx->{__stash}{blog_id} || 0;
+    my $cb_name = $args->{callback}
+        or return $ctx->super_handler( $args, $cond );
+
     my $tmpl = MT->model('template')->load(
         {   name    => $tmpl_name,
             blog_id => $blog_id ? [ 0, $blog_id ] : 0,
@@ -238,29 +239,9 @@ sub _hdlr_widget_manager {
         MT->translate( "Specified WidgetSet '[_1]' not found.", $tmpl_name )
         );
 
-    ## Load all widgets for make cache.
     my @widgets;
-    if ( my $modulesets = $tmpl->modulesets ) {
-        my @widget_ids = split ',', $modulesets;
-        my $terms
-            = ( scalar @widget_ids ) > 1
-            ? { id => \@widget_ids }
-            : $widget_ids[0];
-        my @objs = MT->model('template')->load($terms);
-        my %widgets = map { $_->id => $_ } @objs;
-        push @widgets, $widgets{$_} for @widget_ids;
-    }
-    elsif ( my $text = $tmpl->text ) {
-        my @widget_names = $text =~ /widget\=\"([^"]+)\"/g;
-        my @objs = MT->model('template')->load(
-            {   name    => \@widget_names,
-                blog_id => [ $blog_id, 0 ],
-            }
-        );
-        @objs = sort { $a->blog_id <=> $b->blog_id } @objs;
-        my %widgets;
-        $widgets{ $_->name } = $_ for @objs;
-        push @widgets, $widgets{$_} for @widget_names;
+    if ( my $text = $tmpl->text ) {
+        @widgets = $text =~ /(<mt:include widget="[^"]*">)/g;
     }
 
     my $app = MT->instance;
@@ -269,25 +250,20 @@ sub _hdlr_widget_manager {
         my $step = 4.0 / scalar(@widgets);
         my $priority = 3;
         my $reg = init_callbacks($app, $ctx);
-        my $name = 
-              $tmpl_name eq $app->translate("3-column layout - Primary Sidebar") ? "sidebar_primary"
-            : $tmpl_name eq $app->translate("3-column layout - Secondary Sidebar") ? "sidebar_secondary"
-            : "sidebar_primary";
+        my ($i_cb_name) = split(' ', $cb_name);
         my $name_prefix  = $ctx->var('callback_prefix');
-        $name = "$name_prefix.$name" if $name_prefix;
-        my $cb_array = ( $reg->{$name} ||= [] );
+        $i_cb_name = "$name_prefix.$i_cb_name" if $name_prefix;
+        my $cb_array = ( $reg->{$i_cb_name} ||= [] );
         for my $widget (@widgets) {
-            my $tokens = $widget->tokens();
-            my $cb = { tokens => $tokens, priority => $priority };
+            my $cb = {
+                template => $widget,
+                priority => $priority,
+            };
             $priority += $step;
             push @$cb_array, $cb;
         }
     }
 
-    my $cb_name = 
-          $tmpl_name eq $app->translate("3-column layout - Primary Sidebar") ? "sidebar_primary"
-        : $tmpl_name eq $app->translate("3-column layout - Secondary Sidebar") ? "sidebar_secondary"
-        : "sidebar_primary sidebar_secondary";
     return template_callback($ctx, { name => $cb_name });
 }
 
