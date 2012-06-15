@@ -220,11 +220,11 @@ sub are_callbacks_registred {
 
 sub _hdlr_widget_manager {
     my ( $ctx, $args, $cond ) = @_;
+    my $cb_name = $args->{callback}
+        or return $ctx->super_handler( $args, $cond );
     my $tmpl_name = delete $args->{name}
         or return $ctx->error( MT->translate("name is required.") );
     my $blog_id = $args->{blog_id} || $ctx->{__stash}{blog_id} || 0;
-    my $cb_name = $args->{callback}
-        or return $ctx->super_handler( $args, $cond );
 
     my $tmpl = MT->model('template')->load(
         {   name    => $tmpl_name,
