@@ -39,7 +39,7 @@ Callback Names
 --------------
 
 A typical callback name is: "publish.verytop.index"
-If goes from the application, to the position, and to the specific page name.
+It goes from the application, to the position, and to the specific page name.
 In this case, callbacks registered to the following names will be run:
 "publish", "publish.verytop" and "publish.verytop.index"
 
@@ -119,4 +119,4 @@ entry, main_index, monthly_entry_listing, page search_results
 TODO
 ----
 
-Add Dynamic Publishing support
+In Dynamic Publishing, add support for ignoring callbacks from plugins that were uninstalled or deactivated
