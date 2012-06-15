@@ -9,8 +9,10 @@ function __handle_widgetset($args, &$ctx) {
     $blog_id or $blog_id = 0;
     $widgetmanager = $args['name'];
     $cb_name = $args['callback'];
-    if (!$widgetmanager || !$cb_name) 
-        return;
+    if (!$cb_name || !$widgetmanager) {
+        $fn = $ctx->stash('old_widgets_handler');
+        return $fn($args, $ctx);
+    }
     $tmpl = $ctx->mt->db()->get_template_text($ctx, $widgetmanager, $blog_id, 'widgetset', $args['global']);
     if ( isset($tmpl) && $tmpl ) {
         preg_match_all('/<mt:include widget="[^"]*">/', $tmpl, $matches);
@@ -45,7 +47,8 @@ function __init_mtsettemplatecallback() {
     $mt = MT::get_instance();
     $ctx =& $mt->context();
 	$ctx->add_token_tag('mtsettemplatecallback');
-    $ctx->add_tag('widgetset', '__handle_widgetset');
+    $old_hlr = $ctx->add_tag('widgetset', '__handle_widgetset');
+    $ctx->stash('old_widgets_handler', $old_hlr);
 }
 __init_mtsettemplatecallback();
 

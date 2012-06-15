@@ -103,6 +103,20 @@ they will be mixed together, ordered by priority.
 
 Note: this is the only case of callbacks with non-integer priority. oops.
 
+The mt:widgets tag have another attribute: callback. it is the name of the callback to load the widgets
+on, and to excecute. If there are more then one callback in the attribute, the widgets will be loaded
+on the first callback, and all the callbacks will be excecuted. examples:
+
+  <$mt:WidgetSet 
+    name="<__trans phrase="3-column layout - Primary Sidebar">" 
+    callback="sidebar_primary"$>
+  <$mt:WidgetSet 
+    name="<__trans phrase="2-column layout - Sidebar">" 
+    callback="sidebar_primary sidebar_secondary"$>
+
+If a callback attribute is not present, the widgets will be displayed normally, and no callback
+will not be called
+
 Themes
 ------
 
