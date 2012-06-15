@@ -104,10 +104,17 @@ Note: this is the only case of callbacks with non-integer priority. oops.
 Themes
 ------
 
-In the attached themes, the following callbacks are used:
+The attached themes are a copy of the classic blog and website themes supplied by
+default with Movable Type. They were modified to support callbacks.
+
+The following callbacks are used:
 before_content, after_content, above_footer, footer, verybuttom, 
 verytop, banner, below_banner, htmlhead, between_content.entry_summary,
 sidebar_secondary, sidebar_primary, after_content, before_content
+
+The following screen-names are used:
+archive_index, category_entry_listing, comment_preview, comment_response, dynamic_error, 
+entry, main_index, monthly_entry_listing, page search_results
 
 TODO
 ----
