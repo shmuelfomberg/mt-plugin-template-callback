@@ -12,6 +12,9 @@ If offers three tags:
 
 This runs all the callbacks for the given name
 Examples for names: "verytop", "siderbar_primary sidebar_secondary"
+Priority: can be either a number, (i.e. "5") or a range ("3..7"). 
+Will execute only the callback with these priorities. If no priority is given, 
+will execute all the callbacks for this callback name
 
 <mt:SetTemplateCallback name="callback name" [priority="5"] $>
    ... template code ...
@@ -43,8 +46,26 @@ In this case, callbacks registered to the following names will be run:
 So callback registred to "publish.verytop" will appear in the very top 
 of all the pages.
 
-Registering a Callback
-----------------------
+Registering a global Callback
+-----------------------------
+
+In your plugin directory, create directory: tmpl/callbacks
+
+In this directory, the files sould be named "<cb_name>.<priority>.tmpl". i.e.
+
+  publish.sidebar_primary.2.tmpl
+
+Will register a callback for all blogs, callback name "publish.sidebar_primary",
+priority 2
+
+Another example:
+
+  publish.banner.entry.5.tmpl
+
+Will be added to the banner only in the entry pages, with priority 5
+
+Registering a Callback on the DB
+--------------------------------
 
 Create and save a template object, with the following parameters:
 
@@ -78,12 +99,15 @@ The widgets are automatically loaded into these callbacks:
 with priorities from 3 to 7. If there is only one sidebar, 
 they will be mixed together, ordered by priority.
 
+Note: this is the only case of callbacks with non-integer priority. oops.
+
 Themes
 ------
 
 In the attached themes, the following callbacks are used:
 before_content, after_content, above_footer, footer, verybuttom, 
-verytop, banner, below_banner, htmlhead, between_content.entry_summary
+verytop, banner, below_banner, htmlhead, between_content.entry_summary,
+sidebar_secondary, sidebar_primary, after_content, before_content
 
 TODO
 ----
