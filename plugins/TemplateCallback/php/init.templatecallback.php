@@ -1,8 +1,9 @@
 <?php
 
 require_once('callback_lib.php');
+require_once('function.mttemplatecallback.php');
+
 function __handle_widgetset($args, &$ctx) {
-    // require_once('function.mttemplatecallback.php');
     $blog_id = $args['blog_id'];
     $blog_id or $blog_id = $ctx->stash('blog_id');
     $blog_id or $blog_id = 0;
