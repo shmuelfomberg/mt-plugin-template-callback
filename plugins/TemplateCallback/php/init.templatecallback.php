@@ -1,7 +1,7 @@
 <?php
 
+require_once('callback_lib.php');
 function __handle_widgetset($args, &$ctx) {
-    // require_once('callback_lib.php');
     // require_once('function.mttemplatecallback.php');
     $blog_id = $args['blog_id'];
     $blog_id or $blog_id = $ctx->stash('blog_id');
@@ -22,7 +22,7 @@ function __handle_widgetset($args, &$ctx) {
             $priority = 3.0;
             list($i_cb_name) = explode(' ', $cb_name);
             $i_cb_name = 'publish.' . $i_cb_name;
-            global $_callback_registry;
+            $_callback_registry =& _init_template_callbacks($ctx);
             if (!array_key_exists($i_cb_name, $_callback_registry)) {
                 $_callback_registry[$i_cb_name] = array();
             }

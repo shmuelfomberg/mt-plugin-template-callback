@@ -10,7 +10,7 @@ function smarty_block_mtsettemplatecallback($args, $content, &$ctx, &$repeat) {
         $priority = $args['priority'];
         $priority or $priority = 5;
         $value = $args['token_fn'];
-        global $_callback_registry;
+        $_callback_registry =& _init_template_callbacks($ctx);
         if (!isset($_callback_registry[$name])) {
         	$_callback_registry[$name] = array();
         }

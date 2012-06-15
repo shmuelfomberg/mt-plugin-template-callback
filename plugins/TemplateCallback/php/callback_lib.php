@@ -1,8 +1,6 @@
 <?php
 
 
-$GLOBALS['_callback_registry'] = array();
-
 function __init_readyamlfile($filename) {
     // $cbs = yaml_parse_file($filename);
 }
@@ -31,11 +29,9 @@ function __init_collectcallbacks_from_yaml() {
 }
 
 
-function __init_collectcallbacks_from_files($mt, $ctx) {
+function __init_collectcallbacks_from_files($mt, $ctx, &$_callback_registry) {
 
     $plugin_paths = $mt->config('PluginPath');
-    global $_callback_registry;
-       $STDERR = fopen('php://stderr', 'w+');
 
     foreach ($plugin_paths as $path) {
         if ( !is_dir($path) )
@@ -78,8 +74,7 @@ function __init_collectcallbacks_from_files($mt, $ctx) {
     }
 }
 
-function __init_collectcallbacks_from_db($mt, $ctx) {
-    global $_callback_registry;
+function __init_collectcallbacks_from_db($mt, $ctx, &$_callback_registry) {
     $blog_id = $ctx->stash('blog_id');
     $where = "template_identifier = 'publish' 
         and template_type='t_callback' 
@@ -112,14 +107,15 @@ function __init_collectcallbacks_from_db($mt, $ctx) {
     }
 }
 
-function _init_template_callbacks() {
+function &_init_template_callbacks(&$ctx) {
+    if (array_key_exists('_callback_registry', $ctx->__stash))
+        return $ctx->__stash['_callback_registry'];
+    $_callback_registry = array();
     $mt = MT::get_instance();
-    $ctx =& $mt->context();
-    __init_collectcallbacks_from_files($mt, $ctx);
-    __init_collectcallbacks_from_db($mt, $ctx);
-    return 1;
+    $ctx->__stash['_callback_registry'] =& $_callback_registry;
+    __init_collectcallbacks_from_files($mt, $ctx, $_callback_registry);
+    __init_collectcallbacks_from_db($mt, $ctx, $_callback_registry);
+    return $_callback_registry;
 }
-
-_init_template_callbacks();
 
 ?>

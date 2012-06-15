@@ -2,7 +2,7 @@
 require_once('callback_lib.php');
 
 function smarty_function_mttemplatecallback($args, &$ctx) {
-    global $_callback_registry;
+    $_callback_registry =& _init_template_callbacks($ctx);
     $name = $args['name'];
     if (!$name) return '';
     $pieces = array_reverse(explode('.', $name));
