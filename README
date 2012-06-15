@@ -3,6 +3,8 @@ Movable Type Plugin: Template Callbacks
 
 This is a proof-of-concept plugin. It defines the concept of 'Callbacks' inside a template.
 
+It works for Static Publishing and Dynamic Publishing
+
 TAGS
 ----
 
