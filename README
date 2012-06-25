@@ -12,38 +12,38 @@ If offers three tags:
 
 <$mt:TemplateCallback name="callback name" [priority="5"] $>
 
-This runs all the callbacks for the given name
-Examples for names: "verytop", "siderbar_primary sidebar_secondary"
+This runs all the callbacks for the given name.
+Examples for names: "verytop", "siderbar_primary sidebar_secondary".
 Priority: can be either a number, (i.e. "5") or a range ("3..7"). 
 Will execute only the callback with these priorities. If no priority is given, 
-will execute all the callbacks for this callback name
+will execute all the callbacks for this callback name.
 
 <mt:SetTemplateCallback name="callback name" [priority="5"] $>
    ... template code ...
 </mt:SetTemplateCallback>
 
 This set a callback for a given name, and priority. 
-if no priority was given, 5 is the default
+If no priority was given, 5 is the default.
 
 <mt:AreCallbacksRegistred name="callback name">
 </mt:AreCallbacksRegistred>
 
-A conditional block, running only if any callback was registered for this name
+A conditional block, running only if any callback was registered for this name.
 
 At the start of the template, please add these lines:
 
 <$mt:var name="callback_prefix" value="publish"$>
 <$mt:var name="callback_postfix" value="entry"$>
 
-This specifies the callbacks application and in which page we are now
+This specifies the callbacks application and in which page we are now.
 
 Callback Names
 --------------
 
-A typical callback name is: "publish.verytop.index"
+A typical callback name is: "publish.verytop.index".
 It goes from the application, to the position, and to the specific page name.
 In this case, callbacks registered to the following names will be run:
-"publish", "publish.verytop" and "publish.verytop.index"
+"publish", "publish.verytop" and "publish.verytop.index".
 
 So callback registred to "publish.verytop" will appear in the very top 
 of all the pages.
@@ -51,20 +51,20 @@ of all the pages.
 Registering a global Callback
 -----------------------------
 
-In your plugin directory, create directory: tmpl/callbacks
+In your plugin directory, create directory: "tmpl/callbacks".
 
 In this directory, the files sould be named "<cb_name>.<priority>.tmpl". i.e.
 
   publish.sidebar_primary.2.tmpl
 
 Will register a callback for all blogs, callback name "publish.sidebar_primary",
-priority 2
+priority "2".
 
 Another example:
 
   publish.banner.entry.5.tmpl
 
-Will be added to the banner only in the entry pages, with priority 5
+Will be added to the banner only in the entry pages, with priority "5".
 
 Registering a Callback on the DB
 --------------------------------
@@ -81,11 +81,11 @@ Create and save a template object, with the following parameters:
   $tmpl->save() or die "failed to save tmpl";
 
 Notes: 
-* name can also be "plugin_id::verytop.entry", which will be activated only if the plugin is installed
-* blog_id can be 0 or a specific blog number.
-* the identifier specify for which application this callback is directed. currently, only 'publish' exists.
+* Name can also be "plugin_id::verytop.entry", which will be activated only if the plugin is installed.
+* "blog_id" can be "0" or a specific blog number.
+* The identifier specify for which application this callback is directed. currently, only 'publish' exists.
 
-If this callback is setting-depended, you can do it on setting-saving, in the following callbacks:
+If this callback is setting-dependent, you can do it on setting-saving, in the following callbacks:
 
 callbacks:
     MT::PluginData::pre_save: $Plugin::Module::plugin_data_pre_save
@@ -98,14 +98,14 @@ Widgets
 
 The widgets are automatically loaded into these callbacks: 
 "publish.sidebar_primary" and "publish.sidebar_secondary", 
-with priorities from 3 to 7. If there is only one sidebar, 
+with priorities from "3" to "7". If there is only one sidebar, 
 they will be mixed together, ordered by priority.
 
 Note: this is the only case of callbacks with non-integer priority. oops.
 
-The mt:widgets tag have another attribute: callback. it is the name of the callback to load the widgets
+The "mt:widgets" tag has another attribute: "callback". It is the name of the callback to load the widgets
 on, and to excecute. If there are more then one callback in the attribute, the widgets will be loaded
-on the first callback, and all the callbacks will be excecuted. examples:
+on the first callback, and all the callbacks will be excecuted. Examples:
 
   <$mt:WidgetSet 
     name="<__trans phrase="3-column layout - Primary Sidebar">" 
@@ -115,24 +115,24 @@ on the first callback, and all the callbacks will be excecuted. examples:
     callback="sidebar_primary sidebar_secondary"$>
 
 If a callback attribute is not present, the widgets will be displayed normally, and no callback
-will not be called
+will be called.
 
 Themes
 ------
 
-The attached themes are a copy of the classic blog and website themes supplied by
+The attached themes are a copy of the "classic blog" and "website" themes supplied by
 default with Movable Type. They were modified to support callbacks.
 
 The following callbacks are used:
-before_content, after_content, above_footer, footer, verybuttom, 
+before_content, after_content, above_footer, footer, verybottom, 
 verytop, banner, below_banner, htmlhead, between_content.entry_summary,
 sidebar_secondary, sidebar_primary, after_content, before_content
 
 The following screen-names are used:
 archive_index, category_entry_listing, comment_preview, comment_response, dynamic_error, 
-entry, main_index, monthly_entry_listing, page search_results
+entry, main_index, monthly_entry_listing, page search_results.
 
 TODO
 ----
 
-In Dynamic Publishing, add support for ignoring callbacks from plugins that were uninstalled or deactivated
+In Dynamic Publishing, add support for ignoring callbacks from plugins that were uninstalled or deactivated.
