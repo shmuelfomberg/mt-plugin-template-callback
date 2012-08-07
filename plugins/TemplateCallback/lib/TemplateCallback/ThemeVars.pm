@@ -52,12 +52,34 @@ sub set_appearance {
         }
         $cnf->data($c_data);
         $cnf->save();
-        $params{system_msg} = "Please rebuild";
+        $params{saved} = 1;
+    }
+    my @recs = values %$c_data;
+    foreach my $rec ( @recs ) {
+        $rec->{order} ||= 10000;
+        $rec->{id} = "var_".$rec->{name};
     }
     $_->{order} ||= 10000 foreach values %$c_data;
-    my @recs = sort { $a->{order} <=> $b->{order} } values %$c_data;
+    my @recs = sort { $a->{order} <=> $b->{order} } @recs;
     $params{variables} = \@recs;
+    if (scalar(@recs) == 0) {
+        $params{error} = "Your theme does not have variables defined";
+    }
     return $plugin->load_tmpl('appearance.tmpl', \%params);
+}
+
+sub build_file_filter {
+    my ($cb, %args) = @_;
+    my $blog = $args{blog};
+    my $scope = $blog->class . ':' . $blog->id;
+    my $ctx = $args{context};
+    my $plugin = MT->component('TemplateCallback');
+    my $cnf = $plugin->get_config_obj($scope);
+    my $data = $cnf->data();
+    while ( my ($key, $rec) = each %$data ) {
+        $ctx->var($key, $rec->{value});
+    }
+    return 1;
 }
 
 1;

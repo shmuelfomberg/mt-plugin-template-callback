@@ -1,5 +1,63 @@
 <mt:setvar name="page_title" value="<__trans phrase="Blog Appearance">">
 
+<mt:setvarblock name="system_msg">
+<mt:if name="error">
+  <mtapp:statusmsg
+     id="generic-error"
+     class="error"
+     can_close="0">
+    <mt:var name="error">
+  </mtapp:statusmsg>
+</mt:if>
+<mt:if name="saved">
+  <mt:if name="can_rebuild">
+  <mtapp:statusmsg
+     id="saved"
+     class="success"
+     rebuild="all"
+     can_close="1">
+    <__trans phrase="Your preferences have been saved.">
+  </mtapp:statusmsg>
+  <mt:else>
+  <mtapp:statusmsg
+     id="saved"
+     class="success"
+     can_close="1">
+    <__trans phrase="Your preferences have been saved.">
+  </mtapp:statusmsg>
+  </mt:if>
+</mt:if>
+</mt:setvarblock>
+
 <mt:include name="include/header.tmpl">
+
+<form id="appearance_form" name="appearance_form" method="post" action="<mt:var name="script_url">">
+  <input type="hidden" name="__mode" value="theme_appearance" />
+  <input type="hidden" name="save" value="1" />
+  <input type="hidden" name="blog_id" value="<mt:var name="blog_id" escape="html">" />
+  <input type="hidden" name="return_args" value="<mt:var name="return_args" escape="html">" />
+  <input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape="html">" />
+
+<mt:loop name="variables">
+
+<mtapp:setting
+	id="$id"
+	label="$label">
+	<input type="text" name="<$mt:var name="id"$>" class="text color" value="<mt:var name="value" escape="html">" />
+</mtapp:setting>
+
+</mt:loop>
+
+  <mt:setvarblock name="action_buttons">
+    <button
+       type="submit"
+       accesskey="s"
+       title="<__trans phrase="Save changes to these settings (s)">"
+       class="save action primary button">
+      <__trans phrase="Save Changes">
+    </button>
+  </mt:setvarblock>
+  <mt:include name="include/actions_bar.tmpl" bar_position="bottom" hide_pager="1" settings_bar="1">
+</form>
 
 <mt:include name="include/footer.tmpl">

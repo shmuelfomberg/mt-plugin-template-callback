@@ -36,6 +36,8 @@ applications:
                 permission: edit_templates
         methods:
             theme_appearance: '$TemplateCallback::TemplateCallback::ThemeVars::set_appearance'
+        callbacks:
+            build_file_filter: '$TemplateCallback::TemplateCallback::ThemeVars::build_file_filter'
 
 themes:
     classic_website_wcb:
