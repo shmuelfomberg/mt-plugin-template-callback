@@ -9,11 +9,33 @@ plugin_link: http://www.movabletype.org/
 
 tags:
     function:
-        TemplateCallback: $TemplateCallback::TemplateCallback::Tags::template_callback
-        WidgetSet: $TemplateCallback::TemplateCallback::Tags::_hdlr_widget_manager
+        TemplateCallback: '$TemplateCallback::TemplateCallback::Tags::template_callback'
+        WidgetSet: '$TemplateCallback::TemplateCallback::Tags::_hdlr_widget_manager'
     block:
-        SetTemplateCallback: $TemplateCallback::TemplateCallback::Tags::set_template_callback
-        AreCallbacksRegistred?: $TemplateCallback::TemplateCallback::Tags::are_callbacks_registred
+        SetTemplateCallback: '$TemplateCallback::TemplateCallback::Tags::set_template_callback'
+        AreCallbacksRegistred?: '$TemplateCallback::TemplateCallback::Tags::are_callbacks_registred'
+
+theme_element_handlers:
+    theme_variables:
+        label: Theme Variables
+        order: 150
+        importer:
+            import: '$TemplateCallback::TemplateCallback::ThemeVars::import'
+            info: '$TemplateCallback::TemplateCallback::ThemeVars::info'
+
+applications:
+    cms:
+        menus:
+            design:appearance:
+                label: Appearance
+                order: 300
+                view: 
+                    - blog
+                    - website
+                mode: theme_appearance
+                permission: edit_templates
+        methods:
+            theme_appearance: '$TemplateCallback::TemplateCallback::ThemeVars::set_appearance'
 
 themes:
     classic_website_wcb:
