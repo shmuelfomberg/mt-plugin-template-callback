@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 
-sub import {
+sub import_tv {
     my ( $element, $theme, $obj_to_apply ) = @_;
     return unless $obj_to_apply->datasource eq 'blog';
     my $scope = $obj_to_apply->class . ':' . $obj_to_apply->id;
@@ -68,11 +68,11 @@ sub set_appearance {
     return $plugin->load_tmpl('appearance.tmpl', \%params);
 }
 
-sub build_file_filter {
-    my ($cb, %args) = @_;
-    my $blog = $args{blog};
+sub init {
+    my ($ctx) = @_;
+
+    my $blog = $ctx->stash('blog');
     my $scope = $blog->class . ':' . $blog->id;
-    my $ctx = $args{context};
     my $plugin = MT->component('TemplateCallback');
     my $cnf = $plugin->get_config_obj($scope);
     my $data = $cnf->data();
@@ -81,5 +81,25 @@ sub build_file_filter {
     }
     return 1;
 }
+
+# PHP init code:
+    # $blog_id = $ctx->stash('blog_id');
+    # $STDERR = fopen('php://stderr', 'w+');
+    # fwrite($STDERR, "in init\n");
+    # $theme_data = $mt->db()->fetch_plugin_data('TemplateCallback', 'configuration:blog:'.$blog_id);
+    # if (!empty($theme_data)) {
+    #     fwrite($STDERR, "in init: not empty\n");
+    #     $vars =& $ctx->__stash['vars'];
+    #     if (!isset($vars)) {
+    #         $ctx->__stash['vars'] = array();
+    #         $vars =& $ctx->__stash['vars'];
+    #     }
+    #     foreach ($theme_data as $key => $rec) {
+    #         $vars[$key] = $rec[$value];
+    #     }
+    # }
+    # else {
+    #     fwrite($STDERR, "in init: empty\n");
+    # }
 
 1;

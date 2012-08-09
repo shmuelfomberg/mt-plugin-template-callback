@@ -1,6 +1,7 @@
 package TemplateCallback::Tags;
 use strict;
 use warnings;
+use TemplateCallback::ThemeVars;
 
 # DB storage:
 # type => 't_callback', name => 'verytop.entry',(or 'plugin_id::verytop.entry')
@@ -91,6 +92,19 @@ sub init_callbacks {
     return $callbacks_listing;
 }
 
+sub init {
+    my ($ctx, $args) = @_;
+    my $app = MT->instance;
+    init_callbacks($app, $ctx);
+    TemplateCallback::ThemeVars::init($ctx);
+    return '';
+}
+
+sub get_callback_reg {
+    my $ctx = shift;
+    return $ctx->stash('callbacks_listing');
+}
+
 sub get_cb_by_name {
     my ($ctx, $reg, $name_arg) = @_;
     my $name_prefix  = $ctx->var('callback_prefix') || '';
@@ -143,7 +157,7 @@ sub get_cb_by_priority {
 sub template_callback {
     my ($ctx, $args) = @_;
     my $app = MT->instance;
-    my $reg = init_callbacks($app, $ctx);
+    my $reg = get_callback_reg($ctx) or return '';
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
     my $all_callbacks = get_cb_by_name($ctx, $reg, $name_arg);
@@ -185,7 +199,7 @@ sub template_callback {
 sub set_template_callback {
     my ($ctx, $args, $cond) = @_;
     my $app = MT->instance;
-    my $reg = init_callbacks($app, $ctx);
+    my $reg = get_callback_reg($ctx) or return '';
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
     my $priority = $args->{priority} || 5;
@@ -211,7 +225,7 @@ sub set_template_callback {
 sub are_callbacks_registred {
     my ($ctx, $args, $cond) = @_;
     my $app = MT->instance;
-    my $reg = init_callbacks($app, $ctx);
+    my $reg = get_callback_reg($ctx) or return 0;
     my $name_arg = $args->{name} 
         or return $ctx->error( "Callback name is needed" );
     my $all_callbacks = get_cb_by_name($ctx, $reg, $name_arg);
@@ -221,6 +235,8 @@ sub are_callbacks_registred {
 sub _hdlr_widget_manager {
     my ( $ctx, $args, $cond ) = @_;
     my $cb_name = $args->{callback}
+        or return $ctx->super_handler( $args, $cond );
+    my $reg = get_callback_reg($ctx) 
         or return $ctx->super_handler( $args, $cond );
     my $tmpl_name = delete $args->{name}
         or return $ctx->error( MT->translate("name is required.") );
@@ -249,7 +265,6 @@ sub _hdlr_widget_manager {
     if (@widgets) {
         my $step = 4.0 / scalar(@widgets);
         my $priority = 3;
-        my $reg = init_callbacks($app, $ctx);
         my ($i_cb_name) = split(' ', $cb_name);
         my $name_prefix  = $ctx->var('callback_prefix');
         $i_cb_name = "$name_prefix.$i_cb_name" if $name_prefix;
