@@ -1,9 +1,31 @@
 Movable Type Plugin: Template Callbacks
 ---------------------------------------
 
-This is a proof-of-concept plugin. It defines the concept of 'Callbacks' inside a template.
+This is a proof-of-concept plugin. It tries to re-define the relations between
+templates, plugins and themes. 
+
+1. It defines the concept of 'Callbacks' inside a template
+2. let the theme declare 'theme variables', that are added to the templates on build
+
+The theme variables can be set under the Design->Appearance menu
 
 It works for Static Publishing and Dynamic Publishing
+
+Plugin Template Init
+--------------------
+
+For initializing the plugin, put in the head of each published template 
+(either index or archive) the following tag:
+
+<$mt:InitTemplateCallback screen="screen_name"$>
+
+At the start of the template, please add these lines:
+
+The screen name specifies in which page we are now. 
+typlically is "main_index", or "entry" and so on
+
+Without this tag, the callback tags will be ignored, and the theme variables won't
+be added to the template variables
 
 TAGS
 ----
@@ -29,13 +51,6 @@ If no priority was given, 5 is the default.
 </mt:AreCallbacksRegistred>
 
 A conditional block, running only if any callback was registered for this name.
-
-At the start of the template, please add these lines:
-
-<$mt:var name="callback_prefix" value="publish"$>
-<$mt:var name="callback_postfix" value="entry"$>
-
-This specifies the callbacks application and in which page we are now.
 
 Callback Names
 --------------
@@ -117,8 +132,38 @@ on the first callback, and all the callbacks will be excecuted. Examples:
 If a callback attribute is not present, the widgets will be displayed normally, and no callback
 will be called.
 
-Themes
-------
+Declaring Theme Variables
+-------------------------
+
+In the theme.yaml file, under the 'elements' key, add the following lines:
+
+elements:
+    variables:
+        component: TemplateCallback
+        importer: theme_variables
+        data:
+            background_color:
+                order: 100
+                label: Background Color
+                type: color
+                default: red
+
+This defines one variable, of type 'color', with label and default. All these keys are required.
+(order, label, type and default) there might be other types that need / can accept more keys.
+
+Declaring Color Theme variable
+------------------------------
+
+Good for: background color, banner color, font color, and so on
+
+            background_color:
+                order: 100
+                label: Background Color
+                type: color
+                default: red
+
+Included Themes
+---------------
 
 The attached themes are a copy of the "classic blog" and "website" themes supplied by
 default with Movable Type. They were modified to support callbacks.
