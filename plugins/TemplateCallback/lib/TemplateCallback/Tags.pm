@@ -97,6 +97,8 @@ sub init {
     my $app = MT->instance;
     init_callbacks($app, $ctx);
     TemplateCallback::ThemeVars::init($ctx);
+    $ctx->var('callback_prefix', 'publish'); 
+    $ctx->var('callback_postfix', $args->{screen});
     return '';
 }
 
