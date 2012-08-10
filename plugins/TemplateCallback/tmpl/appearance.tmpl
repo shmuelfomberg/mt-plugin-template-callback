@@ -56,7 +56,13 @@
 <mtapp:setting
 	id="$id"
 	label="$label">
+  <mt:if name="type" eq="color">
 	<input type="text" name="<$mt:var name="id"$>" class="text color-picker" value="<mt:var name="value" escape="html">" />
+  </mt:if>
+  <mt:if name="type" eq="image">
+  <input type="text" class="text" disabled="disabled" value="<mt:var name="value" escape="html">" />
+  <input type="hidden" name="<$mt:var name="id"$>" value="<$mt:var name="source"$>" />
+  </mt:if>
 </mtapp:setting>
 
 </mt:loop>

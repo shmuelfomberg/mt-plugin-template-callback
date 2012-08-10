@@ -6,6 +6,7 @@ use Data::Dumper;
 sub import_tv {
     my ( $element, $theme, $obj_to_apply ) = @_;
     return unless $obj_to_apply->datasource eq 'blog';
+    my $app = MT->instance;
     my $scope = $obj_to_apply->class . ':' . $obj_to_apply->id;
     my $plugin = MT->component('TemplateCallback');
     my $cnf = $plugin->get_config_obj($scope);
@@ -15,6 +16,35 @@ sub import_tv {
         $rec->{name} = $name;
         $rec->{value} = $rec->{default};
         $param->{$name} = $rec;
+        if ($rec->{type} eq 'color') {
+            if ($rec->{value} !~ m/^(?:#[0-9A-Fa-f]+)|\w+$/) {
+                return $plugin->error('Invalid color value: ' . $rec->{value});
+            }
+        }
+        if ($rec->{type} eq 'image') {
+            my $orig_loc = $rec->{default};
+            my $static_src = $orig_loc =~ m!^\%ss/! ? 'static' : 'blog_static';
+            $orig_loc =~ s!^\%\w+/!!;
+            my @orig_dir = split '/', $orig_loc;
+            require File::Spec;
+            my $orig_file = File::Spec->catdir( $theme->path, $static_src, @orig_dir );
+            my $dest_dir = $static_src eq 'static' 
+                ? $app->support_directory_url . 'theme_static/' . $theme->id . '/'
+                : $obj_to_apply->site_url;
+            my $dest_url = $dest_dir . join('/', @orig_dir);
+            require Image::Size;
+            my ( $real_w, $real_h ) = Image::Size::imgsize( $orig_file );
+            if (not defined $real_w) {
+                return $plugin->error('Invalid image: ' . $rec->{value});
+            }
+            my ($req_w, $req_h) = $rec->{size} =~ m/w:(\d+)\s+h:(\d+)/;
+            if ( ( $req_w != $real_w ) || ( $req_h != $real_h ) ) {
+                return $plugin->error('Invalid image size: ' . $rec->{value});
+            }
+            $rec->{source} = 'default';
+            $rec->{value} = $dest_url;
+            $rec->{children} = { width => $real_w, height => $real_h };
+        }
     }
     $cnf->data($param);
     $cnf->save();
