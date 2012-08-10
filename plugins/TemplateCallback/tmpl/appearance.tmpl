@@ -29,6 +29,19 @@
 </mt:if>
 </mt:setvarblock>
 
+<mt:setvarblock name="js_include" append="1">
+    <script src="<$mt:var name="static_uri"$>plugins/TemplateCallback/ColorPicker/jquery.colorpicker.js"></script>
+    <link href="<$mt:var name="static_uri"$>plugins/TemplateCallback/ColorPicker/jquery.colorpicker.css" rel="stylesheet" type="text/css"/>
+</mt:setvarblock>
+
+<mt:setvarblock name="jq_js_include" append="1">
+    jQuery('.color-picker').colorpicker({
+        limit: 'websafe',
+        colorFormat: ['EXACT', '#HEX']
+    });
+</mt:setvarblock>
+
+
 <mt:include name="include/header.tmpl">
 
 <form id="appearance_form" name="appearance_form" method="post" action="<mt:var name="script_url">">
@@ -43,7 +56,7 @@
 <mtapp:setting
 	id="$id"
 	label="$label">
-	<input type="text" name="<$mt:var name="id"$>" class="text color" value="<mt:var name="value" escape="html">" />
+	<input type="text" name="<$mt:var name="id"$>" class="text color-picker" value="<mt:var name="value" escape="html">" />
 </mtapp:setting>
 
 </mt:loop>

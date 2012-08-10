@@ -9,7 +9,7 @@ plugin_link: http://www.movabletype.org/
 
 tags:
     function:
-        InitTemplateCallback: '$TemplateCallback::TemplateCallback::Tags::template_callback::init'
+        InitTemplateCallback: '$TemplateCallback::TemplateCallback::Tags::init'
         TemplateCallback: '$TemplateCallback::TemplateCallback::Tags::template_callback'
         WidgetSet: '$TemplateCallback::TemplateCallback::Tags::_hdlr_widget_manager'
     block:

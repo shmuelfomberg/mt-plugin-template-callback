@@ -70,7 +70,6 @@ sub set_appearance {
 
 sub init {
     my ($ctx) = @_;
-
     my $blog = $ctx->stash('blog');
     my $scope = $blog->class . ':' . $blog->id;
     my $plugin = MT->component('TemplateCallback');
