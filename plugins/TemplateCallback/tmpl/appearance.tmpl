@@ -62,6 +62,7 @@
   <mt:if name="type" eq="image">
   <input type="text" class="text" disabled="disabled" value="<mt:var name="value" escape="html">" />
   <input type="hidden" name="<$mt:var name="id"$>" value="<$mt:var name="source"$>" />
+  <a href="<mt:var name="script_url">?__mode=tc_dialog_list_assets&amp;blog_id=<$mt:var name="blog_id"$>&amp;filter=class&amp;filter_val=image&amp;edit_field=<$mt:var name="name"$>" class="mt-open-dialog button">Change image</a>
   </mt:if>
 </mtapp:setting>
 
@@ -78,5 +79,17 @@
   </mt:setvarblock>
   <mt:include name="include/actions_bar.tmpl" bar_position="bottom" hide_pager="1" settings_bar="1">
 </form>
+
+
+
+<script type="text/javascript">
+function SetImageFieldValue(name, value, source) {
+  var $set = jQuery('#var_' + name + '-field');
+  var $text = $set.find('input[type="text"]');
+  $text.val(value);
+  var $src = $set.find('input[type="hidden"]');
+  $src.val(source);
+}
+</script>
 
 <mt:include name="include/footer.tmpl">

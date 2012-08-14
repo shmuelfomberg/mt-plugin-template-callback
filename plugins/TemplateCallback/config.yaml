@@ -37,6 +37,8 @@ applications:
                 permission: edit_templates
         methods:
             theme_appearance: '$TemplateCallback::TemplateCallback::ThemeVars::set_appearance'
+            tc_dialog_list_assets: '$TemplateCallback::TemplateCallback::ThemeVars::dialog_list_asset'
+            tc_examine_image: '$TemplateCallback::TemplateCallback::ThemeVars::examine_image'
 
 themes:
     classic_website_wcb:
