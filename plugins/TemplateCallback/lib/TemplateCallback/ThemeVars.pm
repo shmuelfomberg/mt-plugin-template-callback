@@ -148,26 +148,6 @@ sub init {
     return 1;
 }
 
-# PHP init code:
-    # $blog_id = $ctx->stash('blog_id');
-    # $STDERR = fopen('php://stderr', 'w+');
-    # fwrite($STDERR, "in init\n");
-    # $theme_data = $mt->db()->fetch_plugin_data('TemplateCallback', 'configuration:blog:'.$blog_id);
-    # if (!empty($theme_data)) {
-    #     fwrite($STDERR, "in init: not empty\n");
-    #     $vars =& $ctx->__stash['vars'];
-    #     if (!isset($vars)) {
-    #         $ctx->__stash['vars'] = array();
-    #         $vars =& $ctx->__stash['vars'];
-    #     }
-    #     foreach ($theme_data as $key => $rec) {
-    #         $vars[$key] = $rec[$value];
-    #     }
-    # }
-    # else {
-    #     fwrite($STDERR, "in init: empty\n");
-    # }
-
 sub __make_thumbnail {
     my ($app, $blog, $asset, $req_w, $req_h) = @_;
     # based on MT::Asset::Image/thumbnail_file
