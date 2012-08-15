@@ -64,6 +64,21 @@
   <input type="hidden" name="<$mt:var name="id"$>" value="<$mt:var name="source"$>" />
   <a href="<mt:var name="script_url">?__mode=dialog_list_asset&amp;blog_id=<$mt:var name="blog_id"$>&amp;filter=class&amp;filter_val=image&amp;edit_field=<$mt:var name="name"$>&amp;dialog=1&amp;next_mode=tc_examine_image" class="mt-open-dialog button">Change image</a>
   </mt:if>
+  <mt:if name="type" eq="checkbox">
+  <input type="checkbox" name="<$mt:var name="id"$>" value="1" <mt:if name="value">checked="checked"</mt:if>/>
+  </mt:if>
+  <mt:if name="type" eq="radio">
+  <mt:loop name="choices">
+  <input type="radio" name="<$mt:var name="id"$>" value="<$mt:var name="__key__"$>" <mt:if name="value" eq="$__key__">checked="checked"</mt:if> /><$mt:Var name="__value__"$><br />
+  </mt:loop>
+  </mt:if>
+  <mt:if name="type" eq="dropdown">
+  <select name="<$mt:var name="id"$>">
+  <mt:loop name="choices">
+  <option value="<$mt:var name="__key__"$>" <mt:if name="value" eq="$__key__">selected="selected"</mt:if> ><$mt:Var name="__value__"$></option>
+  </mt:loop>
+  </select>
+  </mt:if>
 </mtapp:setting>
 
 </mt:loop>

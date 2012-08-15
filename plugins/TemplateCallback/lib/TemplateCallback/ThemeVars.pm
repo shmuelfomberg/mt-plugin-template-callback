@@ -44,6 +44,16 @@ sub import_tv {
             $rec->{source} = 'default';
             $rec->{value} = $dest_url;
         }
+        if ($rec->{type} eq 'checkbox') {
+            if (($rec->{value}!=0) and ($rec->{value}!=1)) {
+                return $plugin->error('Checkbox can accept only 0 or 1: ' . $name);
+            }
+        }
+        if ($rec->{type} =~ m/^(?:radio|dropdown)$/) {
+            if (not exists $rec->{choices}->{$rec->{value}}) {
+                return $plugin->error('Radio/dropdown default should be one of the choices: ' . $name);
+            }
+        }
     }
     $cnf->data({vars => $param});
     $cnf->save();
@@ -69,12 +79,9 @@ sub set_appearance {
     my $full_data = $cnf->data();
     my $c_data = $full_data->{vars};
     if ($app->param('save')) {
-        foreach my $key ( $app->param() ) {
-            next unless $key =~ m/^var_(.*)$/;
-            my $name = $1;
-            next unless exists $c_data->{$name};
+        while (my ($name, $rec) = each %$c_data) {
             my $rec = $c_data->{$name};
-            my $value = $app->param($key);
+            my $value = $app->param("var_".$name);
             if ($rec->{type} eq 'color') {
                 next unless $value =~ m/^(?:\w+|#[0-9A-F]+)$/i;
                 $rec->{value} = $value;
@@ -97,6 +104,15 @@ sub set_appearance {
                         $rec->{value} = $asset->url;
                     }
                 }
+            }
+            if ($rec->{type} eq 'checkbox') {
+                $rec->{value} = $value ? 1 : 0;
+            }
+            if ($rec->{type} =~ m/^(?:radio|dropdown)$/) {
+                if (not exists $rec->{choices}->{$value}) {
+                    return $app->errtrans('Invalid Request.');
+                }
+                $rec->{value} = $value;
             }
         }
         $cnf->data($full_data);

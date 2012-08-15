@@ -183,6 +183,42 @@ the 'blog_static' directory, it should start with "%bs/"
 If the user supplies an image that does not fit the expected size, it will be scaled
 to the requied size. (TODO: make something more advanced then that)
 
+Declaring Checkbox Theme variable
+---------------------------------
+
+Good for: yes/no questions
+
+            is_up:
+                order: 300
+                label: Is Up?
+                type: checkbox
+                default: 1
+
+the default should be 1 or 0
+
+Declaring Radio button / Dropdown Theme variable
+------------------------------------------------
+
+Good for: multiple options, such as in which side to put the widgets, different layouts
+and so on.
+
+            which_side:
+                order: 400
+                label: Which side
+                type: dropdown
+                default: up
+                choices:
+                    up: Up
+                    down: Down
+                    left: left
+                    right: Right
+
+the default should be one of the choices. 
+In the choices, the user is displayed the values, and the theme variable contains the key. 
+So in this case, the user will select 'Down', and the 'which_side' variable will contain 'down'.
+
+putting 'radio' instead of 'dropdown' will create radio buttons.
+
 Included Themes
 ---------------
 
