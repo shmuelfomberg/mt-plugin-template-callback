@@ -39,6 +39,8 @@ applications:
             theme_appearance: '$TemplateCallback::TemplateCallback::ThemeVars::set_appearance'
             tc_dialog_list_assets: '$TemplateCallback::TemplateCallback::ThemeVars::dialog_list_asset'
             tc_examine_image: '$TemplateCallback::TemplateCallback::ThemeVars::examine_image'
+        callbacks:
+            pre_apply_theme: '$TemplateCallback::TemplateCallback::ThemeVars::pre_apply_theme'
 
 themes:
     classic_website_wcb:

@@ -3,6 +3,16 @@ use strict;
 use warnings;
 use Data::Dumper;
 
+sub pre_apply_theme {
+    my ($cb, $theme, $blog) = @_;
+    my $scope = $blog->class . ':' . $blog->id;
+    my $plugin = MT->component('TemplateCallback');
+    my $cnf = $plugin->get_config_obj($scope);
+    $cnf->data({});
+    $cnf->save();
+    return 1;
+}
+
 sub import_tv {
     my ( $element, $theme, $obj_to_apply ) = @_;
     return unless $obj_to_apply->datasource eq 'blog';
