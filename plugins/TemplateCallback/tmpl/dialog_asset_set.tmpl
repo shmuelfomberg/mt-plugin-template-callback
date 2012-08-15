@@ -1,0 +1,8 @@
+<mt:include name="dialog/header.tmpl">
+
+<script type="text/javascript">
+parent.SetImageFieldValue('<$mt:var name="field" encode="js"$>', '<$mt:var name="field_value" encode="js"$>', '<$mt:var name="field_source" encode="js"$>');
+parent.jQuery.fn.mtDialog.close();
+</script>
+
+<mt:include name="dialog/footer.tmpl">

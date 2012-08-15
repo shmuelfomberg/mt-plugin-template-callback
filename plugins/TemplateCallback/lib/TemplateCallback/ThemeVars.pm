@@ -43,10 +43,9 @@ sub import_tv {
             }
             $rec->{source} = 'default';
             $rec->{value} = $dest_url;
-            $rec->{children} = { width => $real_w, height => $real_h };
         }
     }
-    $cnf->data($param);
+    $cnf->data({vars => $param});
     $cnf->save();
     return 1;
 }
@@ -67,7 +66,8 @@ sub set_appearance {
     my $plugin = MT->component('TemplateCallback');
     my $cnf = $plugin->get_config_obj($scope);
     my %params;
-    my $c_data = $cnf->data();
+    my $full_data = $cnf->data();
+    my $c_data = $full_data->{vars};
     if ($app->param('save')) {
         foreach my $key ( $app->param() ) {
             next unless $key =~ m/^var_(.*)$/;
@@ -76,7 +76,7 @@ sub set_appearance {
             my $rec = $c_data->{$name};
             my $value = $app->param($key);
             if ($rec->{type} eq 'color') {
-                next unless $value =~ m/^(?:\w+|#[0-9A-F]+)$/;
+                next unless $value =~ m/^(?:\w+|#[0-9A-F]+)$/i;
                 $rec->{value} = $value;
             }
             if ($rec->{type} eq 'image') {
@@ -86,11 +86,20 @@ sub set_appearance {
                     my $asset = $app->model('image')->load($asset_id);
                     return $app->errtrans('Invalid Request.')
                         unless $asset->blog_id == $blog->id;
-                    $rec->{value} = $asset->url;
+                    my ($req_w, $req_h) = $rec->{size} =~ m/w:(\d+)\s+h:(\d+)/;
+                    my ( $real_w, $real_h ) = ($asset->image_width, $asset->image_height);
+                    if ( ( $req_w != $real_w ) || ( $req_h != $real_h ) ) {
+                        # TODO: make a screen of picture scaling / chopping
+                        # in the meantime, lets just scale the image
+                        $rec->{value} = __make_thumbnail($app, $blog, $asset, $req_w, $req_h);
+                    }
+                    else {
+                        $rec->{value} = $asset->url;
+                    }
                 }
             }
         }
-        $cnf->data($c_data);
+        $cnf->data($full_data);
         $cnf->save();
         $params{saved} = 1;
     }
@@ -115,7 +124,9 @@ sub init {
     my $plugin = MT->component('TemplateCallback');
     my $cnf = $plugin->get_config_obj($scope);
     my $data = $cnf->data();
-    while ( my ($key, $rec) = each %$data ) {
+    return 1 unless $data;
+    my $vars = $data->{vars};
+    while ( my ($key, $rec) = each %$vars ) {
         $ctx->var($key, $rec->{value});
     }
     return 1;
@@ -141,102 +152,36 @@ sub init {
     #     fwrite($STDERR, "in init: empty\n");
     # }
 
-sub dialog_list_asset {
-    my $app = shift;
+sub __make_thumbnail {
+    my ($app, $blog, $asset, $req_w, $req_h) = @_;
+    # based on MT::Asset::Image/thumbnail_file
+    require MT::FileMgr;
+    my $fmgr = $blog->file_mgr;
+    my $file = $asset->thumbnail_filename(Width => $req_w, Height =>$req_h);
+    my $asset_cache_path = $asset->_make_cache_path();
+    my $thumbnail = File::Spec->catfile( $asset_cache_path, $file );
+    my $file_path = $asset->file_path;
 
-    my $blog_id = $app->param('blog_id');
-    return $app->return_to_dashboard( redirect => 1 )
-        unless $blog_id;
+    if (!$fmgr->exists($thumbnail) || ( $fmgr->file_mod_time($thumbnail) < $fmgr->file_mod_time($file_path) ) ) {
+        require MT::Image;
+        my $img = new MT::Image( Filename => $file_path )
+            or return $asset->error( MT::Image->errstr );
+        my ($data) = $img->scale( Height => $req_h, Width => $req_w )
+            or return $asset->error(
+            MT->translate( "Error scaling image: [_1]", $img->errstr ) );
 
-    my $blog = $app->model('blog')->load($blog_id);
-    return $app->permission_denied()
-        unless $app->can_do('access_to_insert_asset_list');
+        return undef 
+            unless $fmgr->can_write($asset_cache_path);
 
-    my %terms;
-    my %args = ( sort => 'created_on', direction => 'descend' );
-
-    my $blog_ids = $app->_load_child_blog_ids($blog_id);
-    push @$blog_ids, $blog_id;
-    $terms{blog_id} = $blog_ids;
-
-    require MT::CMS::Asset;
-    my $hasher = MT::CMS::Asset::build_asset_hasher(
-        $app,
-        PreviewWidth  => 120,
-        PreviewHeight => 120
-    );
-
-    my $class_filter;
-    if ( ( $app->param('filter') || '' ) eq 'class' ) {
-        $class_filter = $app->param('filter_val');
-        my $asset_pkg = MT::Asset->class_handler($class_filter);
-        $terms{class} = $asset_pkg->type_list;
+        $fmgr->put_data( $data, $thumbnail, 'upload' )
+            or return $app->errtrans( "Error creating thumbnail file: [_1]", $fmgr->errstr );
     }
-    else {
-        $terms{class} = '*';    # all classes
-    }
-
-    # identifier => name
-    my $classes = MT::Asset->class_labels;
-    my @class_loop;
-    foreach my $class ( keys %$classes ) {
-        next if $class eq 'asset';
-        push @class_loop,
-            {
-            class_id    => $class,
-            class_label => $classes->{$class},
-            };
-    }
-
-    # Now, sort it
-    @class_loop
-        = sort { $a->{class_label} cmp $b->{class_label} } @class_loop;
-
-    my $dialog    = 1;
-    my %carry_params = map { $_ => $app->param($_) || '' }
-        (qw( edit_field upload_mode require_type asset_select ));
-    MT::CMS::Asset::_set_start_upload_params( $app, \%carry_params )
-        if $app->can_do('upload');
-    my ( $ext_from, $ext_to )
-        = ( $app->param('ext_from'), $app->param('ext_to') );
-    my $plugin = MT->component('TemplateCallback');
-
-    $app->listing(
-        {   terms    => \%terms,
-            args     => \%args,
-            type     => 'asset',
-            code     => $hasher,
-            template => $plugin->load_tmpl('dialog_asset_list.tmpl'),
-            params => {
-                (   $blog
-                    ? ( blog_id      => $blog_id,
-                        blog_name    => $blog->name || '',
-                        edit_blog_id => $blog_id,
-                        ( $blog->is_blog ? ( blog_view => 1 ) : () ),
-                        )
-                    : (),
-                ),
-                is_image => defined $class_filter
-                    && $class_filter eq 'image' ? 1 : 0,
-                dialog_view      => 1,
-                dialog           => 1,
-                search_label     => MT::Asset->class_label_plural,
-                search_type      => 'asset',
-                class_loop       => \@class_loop,
-                can_delete_files => $app->can_do('delete_asset_file') ? 1 : 0,
-                nav_assets       => 1,
-                panel_searchable => 1,
-                next_mode        => 'tc_examine_image',
-                saved_deleted    => $app->param('saved_deleted') ? 1 : 0,
-                object_type      => 'asset',
-                (     ( $ext_from && $ext_to )
-                    ? ( ext_from => $ext_from, ext_to => $ext_to )
-                    : ()
-                ),
-                %carry_params,
-            },
-        }
-    );
+    # based on MT::Asset/thumbnail_url
+    my $basename = File::Basename::basename($thumbnail);
+    require MT::Util;
+    my $path = MT::Util::caturl( MT->config('AssetCacheDir'), unpack( 'A4A2', $asset->created_on ) );
+    $basename = MT::Util::encode_url($basename);
+    return MT::Util::caturl( $blog->site_url, $path, $basename );
 }
 
 sub examine_image {
@@ -253,19 +198,23 @@ sub examine_image {
     my $scope = $blog->class . ':' . $blog->id;
     my $plugin = MT->component('TemplateCallback');
     my $cnf = $plugin->get_config_obj($scope);
-    my $vars = $cnf->data();
+    my $vars = $cnf->data()->{vars};
     my $rec = $vars->{$variable_name};
     return $app->errtrans('Invalid Request.')
         unless $rec and $rec->{type} eq 'image';
 
-    my ( $real_w, $real_h ) = ($asset->image_width, $asset->image_height);
     my ($req_w, $req_h) = $rec->{size} =~ m/w:(\d+)\s+h:(\d+)/;
+    my ( $real_w, $real_h ) = ($asset->image_width, $asset->image_height);
     if ( ( $req_w != $real_w ) || ( $req_h != $real_h ) ) {
-        return $plugin->error('Invalid image size: ' . $rec->{value});
+        # TODO: make a screen of picture scaling / chopping
+        # in the meantime, lets just scale the image
+        $rec->{value} = __make_thumbnail($app, $blog, $asset, $req_w, $req_h);
     }
+    else {
+        $rec->{value} = $asset->url;
+    }
+
     $rec->{source} = 'asset:'.$asset_id;
-    $rec->{value} = $asset->url;
-    $rec->{children} = { width => $real_w, height => $real_h };
     my $params = {
         field => $variable_name,
         field_value => $rec->{value},

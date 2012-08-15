@@ -62,7 +62,7 @@
   <mt:if name="type" eq="image">
   <input type="text" class="text" disabled="disabled" value="<mt:var name="value" escape="html">" />
   <input type="hidden" name="<$mt:var name="id"$>" value="<$mt:var name="source"$>" />
-  <a href="<mt:var name="script_url">?__mode=tc_dialog_list_assets&amp;blog_id=<$mt:var name="blog_id"$>&amp;filter=class&amp;filter_val=image&amp;edit_field=<$mt:var name="name"$>" class="mt-open-dialog button">Change image</a>
+  <a href="<mt:var name="script_url">?__mode=dialog_list_asset&amp;blog_id=<$mt:var name="blog_id"$>&amp;filter=class&amp;filter_val=image&amp;edit_field=<$mt:var name="name"$>&amp;dialog=1&amp;next_mode=tc_examine_image" class="mt-open-dialog button">Change image</a>
   </mt:if>
 </mtapp:setting>
 

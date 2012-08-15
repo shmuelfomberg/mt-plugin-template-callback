@@ -162,6 +162,27 @@ Good for: background color, banner color, font color, and so on
                 type: color
                 default: red
 
+the default can be either a CSS color name, or in hex format, i.e. #330099
+
+Declaring Image Theme variable
+------------------------------
+
+Good for: banner image, user picture
+
+            banner_image:
+                order: 200
+                label: Banner Image
+                type: image
+                default: '%ss/banner.jpg'
+                size: 'w:940 h:198'
+
+The default image should be part of the theme, and must be of the expected size
+If it is under the 'static' directory, it should start with "%ss/". If it is under
+the 'blog_static' directory, it should start with "%bs/"
+
+If the user supplies an image that does not fit the expected size, it will be scaled
+to the requied size. (TODO: make something more advanced then that)
+
 Included Themes
 ---------------
 
