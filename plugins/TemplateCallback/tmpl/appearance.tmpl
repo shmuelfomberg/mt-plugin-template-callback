@@ -51,6 +51,17 @@
   <input type="hidden" name="return_args" value="<mt:var name="return_args" escape="html">" />
   <input type="hidden" name="magic_token" value="<mt:var name="magic_token" escape="html">" />
 
+<mtapp:setting
+  id="page-layout"
+  label="Page Layout">
+  <select name="page_layout">
+  <mt:loop name="page_layouts">
+  <option value="<$mt:var name="value"$>" <mt:if name="current">selected="selected"</mt:if> ><$mt:Var name="label"$></option>
+  </mt:loop>
+  </select>
+</mtapp:setting>
+
+
 <mt:loop name="variables">
 
 <mtapp:setting

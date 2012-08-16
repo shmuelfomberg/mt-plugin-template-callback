@@ -127,6 +127,10 @@ sub set_appearance {
         }
         $cnf->data($full_data);
         $cnf->save();
+        if (my $layout = $app->param('page_layout')) {
+            $blog->page_layout($layout);
+            $blog->save();
+        }
         $params{saved} = 1;
     }
     my @recs = values %$c_data;
@@ -137,9 +141,24 @@ sub set_appearance {
     $_->{order} ||= 10000 foreach values %$c_data;
     @recs = sort { $a->{order} <=> $b->{order} } @recs;
     $params{variables} = \@recs;
-    if (scalar(@recs) == 0) {
-        $params{error} = "Your theme does not have variables defined";
+
+    my @page_layouts = (
+        { value => 'layout-wt', label => '2-Columns, Wide, Thin', },
+        { value => 'layout-tw', label => '2-Columns, Thin, Wide', },
+        { value => 'layout-wm', label => '2-Columns, Wide, Medium', },
+        { value => 'layout-mw', label => '2-Columns, Medium, Wide', },
+        { value => 'layout-wtt', label => '3-Columns, Wide, Thin, Thin', },
+        { value => 'layout-twt', label => '3-Columns, Thin, Wide, Thin', },
+        { value => 'layout-ttw', label => '3-Columns, Thin, Thin, Wide', },
+        { value => 'layout-w-b', label => '1-Column, Wide, Bottom', },
+    );
+    foreach my $rec (@page_layouts) {
+        if ($blog->page_layout eq $rec->{value}) {
+            $rec->{current} = 1;
+        }
     }
+    $params{page_layouts} = \@page_layouts;
+
     return $plugin->load_tmpl('appearance.tmpl', \%params);
 }
 
