@@ -12,6 +12,10 @@ tags:
         InitTemplateCallback: '$TemplateCallback::TemplateCallback::Tags::init'
         TemplateCallback: '$TemplateCallback::TemplateCallback::Tags::template_callback'
         WidgetSet: '$TemplateCallback::TemplateCallback::Tags::_hdlr_widget_manager'
+        EntryBody: '$TemplateCallback::TemplateCallback::ContentPlugins::ProcessBodyTag'
+        EntryMore: '$TemplateCallback::TemplateCallback::ContentPlugins::ProcessBodyTag'
+        PageBody: '$TemplateCallback::TemplateCallback::ContentPlugins::ProcessBodyTag'
+        PageMore: '$TemplateCallback::TemplateCallback::ContentPlugins::ProcessBodyTag'
     block:
         SetTemplateCallback: '$TemplateCallback::TemplateCallback::Tags::set_template_callback'
         AreCallbacksRegistred?: '$TemplateCallback::TemplateCallback::Tags::are_callbacks_registred'
@@ -43,6 +47,8 @@ applications:
             tc_examine_image: '$TemplateCallback::TemplateCallback::ThemeVars::examine_image'
         callbacks:
             pre_apply_theme: '$TemplateCallback::TemplateCallback::ThemeVars::pre_apply_theme'
+            cms_pre_save.entry: '$TemplateCallback::TemplateCallback::ContentPlugins::entry_presave'
+            cms_pre_save.page: '$TemplateCallback::TemplateCallback::ContentPlugins::entry_presave'
 
 themes:
     classic_website_wcb:
