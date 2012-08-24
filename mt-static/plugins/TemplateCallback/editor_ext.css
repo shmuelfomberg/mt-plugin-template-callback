@@ -1,0 +1,9 @@
+div.mtplugin {
+	height: 200;
+	width: 200;
+	background-color: #cccccc;
+}
+
+div.mtplugin div.internal_data {
+	display: none;
+}

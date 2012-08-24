@@ -30,6 +30,10 @@ theme_element_handlers:
             import: '$TemplateCallback::TemplateCallback::ThemeVars::import_tv'
             info: '$TemplateCallback::TemplateCallback::ThemeVars::info'
 
+editors:
+    tinymce:
+        extension: editor_ext.tmpl
+
 applications:
     cms:
         menus:

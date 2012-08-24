@@ -6,10 +6,14 @@ templates, plugins and themes.
 
 1. It defines the concept of 'Callbacks' inside a template
 2. let the theme declare 'theme variables', that are added to the templates on build
+3. Opens the ability for content-plugins
 
 The theme variables can be set under the Design->Appearance menu
 
 It works for Static Publishing and Dynamic Publishing
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 Plugin Template Init
 --------------------
@@ -26,6 +30,9 @@ typlically is "main_index", or "entry" and so on
 
 Without this tag, the callback tags will be ignored, and the theme variables won't
 be added to the template variables
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 TAGS
 ----
@@ -132,6 +139,9 @@ on the first callback, and all the callbacks will be excecuted. Examples:
 If a callback attribute is not present, the widgets will be displayed normally, and no callback
 will be called.
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
 Declaring Theme Variables
 -------------------------
 
@@ -219,6 +229,63 @@ So in this case, the user will select 'Down', and the 'which_side' variable will
 
 putting 'radio' instead of 'dropdown' will create radio buttons.
 
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+Content Plugins
+---------------
+
+This gives plugins the ability to have plugin-data inside the body of an entry,
+that will be inflated to true HTML code when the entry is published (on static
+publishing) or viewed (on Dynamic Publishing)
+
+For this to work, the plugin needs to add to the body the following HTML code:
+
+  <div class="mtplugin mtplugin_<plugin name>">
+    <div class="plugin_internal_data" ...attributes...>
+      ...plugin data...
+    </div>
+  </div>
+
+Anything that is inside the mtplugin div, but outside the plugin_internal_data
+div is considered edit-time information and will be discard on save.
+So you can add controls and previews, that will not be showed on the published 
+entry.
+
+For registering the publish-time replacement, add in your config.yaml file:
+
+tags:
+  content:
+    <plugin name>: $Plugin::Perl::Module::handler
+
+If a matching div is found in the entry one publish, this handler will be called
+using these parameters:
+
+  $str = handler($app, $ctx, $plugin_name, $content, \@args)
+
+Where $content includes whatever was inside the plugin_internal_data div, and 
+@args contains pairs of [key, value] of the attributes of the same div
+
+The whole mtplugin div will be replaced with the output of the handler function.
+If there is no such handler function registered, the div will be deleted.
+
+Controling the plugin divs replacement
+--------------------------------------
+
+By default, these plugins will be only active for the EntryBody, EntryMore tags
+and their Page equivalents. However, you can turn this on for other tags as well
+using this modifier:
+
+  content_plugins="1"
+
+Also, for the EntryBody/More tags, setting it to zero will disable the plugin
+operation:
+
+  content_plugins="0"
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
 Included Themes
 ---------------
 
@@ -233,6 +300,9 @@ sidebar_secondary, sidebar_primary, after_content, before_content
 The following screen-names are used:
 archive_index, category_entry_listing, comment_preview, comment_response, dynamic_error, 
 entry, main_index, monthly_entry_listing, page search_results.
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 TODO
 ----
